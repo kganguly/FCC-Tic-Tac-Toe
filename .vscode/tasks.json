@@ -1,0 +1,11 @@
+		{
+		    "version": "0.1.0",
+		    "command": "gulp",
+		    "isShellCommand": true,
+		    "tasks": [{
+		        "taskName": "test",
+		        "group": "test",
+		        "isTestCommand": true,
+		        "showOutput": "always"
+		    }]
+		}

@@ -3,10 +3,12 @@ var debug = true;
 var TicTacToe = (function () {
     function TicTacToe() {
 
-        var board = this.resetBoard();
+        var board = null;
         var cols = 3;
         var isPlayerX = null;
         var isPlayerTurn = null;
+        var winner = false;
+        var numMoves = 0;
 
         this.resetBoard = function () {
             board = [];
@@ -16,28 +18,50 @@ var TicTacToe = (function () {
         }
         this.pickSide = function () {
             var playerChoice = prompt('Would you like to play as "X"s or "O"s', "X");
-            isPlayerX = playerChoice.trim().toUpperCase() === "X" || playerChoice === null; //handle cancel
+            isPlayerX = playerChoice === null || playerChoice.trim().toUpperCase() === "X"; //handle cancel
             isPlayerTurn = isPlayerX;
         }
         this.play = function () {
-            while (!winner) {
+            while (!winner && numMoves < cols * cols) {
                 if (isPlayerTurn) this.playerTurn();
                 else this.computerTurn();
+                console.log(this.printBoard());
+                this.updateBoard(this.printBoard());
                 winner = this.checkForWinner()
                 isPlayerTurn = isPlayerTurn ? false : true;
             }
             this.endGame();
         }
-        this.playerTurn = function ([x, y]) {
-            board[x][y] = isPlayerX ? "X" : "O";
+        this.playerTurn = function () {
+            sleep(1000);
+            var move = getRandomMove();
+            board[move[0]][move[1]] = isPlayerX ? "X" : "O";
+            //board[x][y] = isPlayerX ? "X" : "O";
+            numMoves++;
         }
-        this.computerTurn = function () {
+
+        function getRandomMove() {
             var isValid = false;
             while (!isValid) {
                 var trial = [Math.floor(Math.random() * 3), Math.floor(Math.random() * 3)];
                 if (board[trial[0]][trial[1]] == null) isValid = true;
             }
-            board[trial[0]][trial[1]] = isPlayerX ? "O" : "X";
+            return trial;
+        }
+
+        function sleep(ms) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > ms) {
+                    break;
+                }
+            }
+        }
+        this.computerTurn = function () {
+            sleep(1000);
+            var move = getRandomMove();
+            board[move[0]][move[1]] = isPlayerX ? "O" : "X";
+            numMoves++;
         }
         this.checkForWinner = function () {
             for (var i = 0; i < cols; i++) {
@@ -50,72 +74,70 @@ var TicTacToe = (function () {
             if (board[0][2] === board[1][1] && board[1][1] === board[2][0]) return board[0][2];
             return false;
         }
+        this.declareWinner = function () {
+            if (winner) {
+                alert("The winner is " + winner + "!");
+            } else {
+                alert("The game ended in a draw.");
+            }
+
+        }
         this.endGame = function () {
+            this.declareWinner();
             this.reset();
-            prompt(); //listener on play again to this.play() and pickside()
+            //prompt(); //listener on play again to this.play() and pickside()
         }
         this.reset = function () {
             this.resetBoard();
             winner = false;
             isPlayerTurn = null;
             isPlayerX = null;
+            numMoves = 0;
         }
         this.startGame = function () {
+            this.resetBoard();
             this.pickSide();
             this.play(); //DOESN'T UNWIND?! memory issue?
         }
-        this.updateBoard = function () {
-
+        this.updateBoard = function (board) {
+            $("#banner").html(board);
         }
-        this.displayBreak = function () {
-            $("#break .readout").html(this.break);
-        }
-
-        this.startTimer = function () {
-            function tick() {
-                that.decrementTime();
-                if (that.isTimeOut()) { //Switch timers on TimeOut
-                    that.switchTimer();
+        this.printBoard = function () {
+            var output = "";
+            for (var i = 0; i < cols; i++) {
+                for (var j = 0; j < cols; j++) {
+                    output += board[i][j] + " "
                 }
-                that.tid = setTimeout(tick, 1000);
-
+                output += "<br>\n";
             }
-
-            var that = this;
-            this.running = true;
-            that.tid = setTimeout(tick, 1000);
+            return output;
         }
-        this.stopTimer = function () {
-            clearTimeout(this.tid);
-            this.running = false;
-        }
-
-        var instance;
-        return {
-            getInstance: function () {
-                if (instance === undefined) {
-                    instance = new TicTacToe();
-                    // Hide the constructor so the returned objected can't be new'd...
-                    instance.constructor = null;
-                }
-                return instance;
-            }
-        };
     }
+
+    var instance;
+    return {
+        getInstance: function () {
+            if (instance === undefined) {
+                instance = new TicTacToe();
+                // Hide the constructor so the returned objected can't be new'd...
+                instance.constructor = null;
+            }
+            return instance;
+        }
+    };
+
 })();
 
 var game = TicTacToe.getInstance();
 
 $(document).ready(function () {
-    setDisplay()
-    setListeners();
-    timer.setAlarm(new Sound("https://www.kganguly.com/media/A-Tone-His_Self-1266414414.mp3"));
+    //setDisplay()
+    //setListeners();
+    game.startGame();
 });
 
 function setDisplay() {
-    timer.displayBreak();
-    timer.displaySession();
-    timer.setTime(timer.getSession());
+
 }
 
 function setListeners() {

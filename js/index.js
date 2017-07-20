@@ -16,6 +16,7 @@ var TicTacToe = (function () {
             for (var i = 0; i < this.cols; i++) {
                 board[i] = [];
             }
+            this.clearBoard();
         }
         this.pickSide = function () {
             var playerChoice = prompt('Would you like to play as "X"s or "O"s', "X");
@@ -23,24 +24,25 @@ var TicTacToe = (function () {
             isPlayerTurn = isPlayerX;
         }
         this.play = function () {
-            while (!winner && numMoves < this.cols * this.cols) {
-                if (isPlayerTurn) this.playerTurn();
+            console.log(this.printBoard());
+            winner = this.checkForWinner();
+            if (winner || numMoves === this.cols * this.cols) {
+                this.endGame();
+            } else {
+                if (isPlayerTurn) this.givePlayerTurn();
                 else this.computerTurn();
-                console.log(this.printBoard());
-                this.updateBoard();
-                winner = this.checkForWinner()
-                isPlayerTurn = isPlayerTurn ? false : true;
             }
-            this.endGame();
         }
-        this.playerTurn = function () {
-            sleep(1000);
-            var move = getRandomMove();
+        this.givePlayerTurn = function () {
+            alert("Your turn!");
+        }
+        this.playerTurn = function (x, y) {
             var mark = isPlayerX ? "X" : "O";
-            board[move[0]][move[1]] = mark;
-            $("#bCell-" + move[0] + "-" + move[1]).html(mark);
-            //board[x][y] = isPlayerX ? "X" : "O";
+            board[x][y] = mark;
+            $("#bCell-" + x + "-" + y).html(mark);
             numMoves++;
+            isPlayerTurn = false;
+            this.play();
         }
 
         function getRandomMove() {
@@ -61,12 +63,16 @@ var TicTacToe = (function () {
             }
         }
         this.computerTurn = function () {
-            sleep(1000);
-            var move = getRandomMove();
-            var mark = isPlayerX ? "O" : "X";
-            board[move[0]][move[1]] = mark;
-            $("#bCell-" + move[0] + "-" + move[1]).html(mark);
-            numMoves++;
+            function makeMove() {
+                var move = getRandomMove();
+                var mark = isPlayerX ? "O" : "X";
+                board[move[0]][move[1]] = mark;
+                $("#bCell-" + move[0] + "-" + move[1]).html(mark);
+                numMoves++;
+                isPlayerTurn = true;
+                game.play();
+            }
+            setTimeout(makeMove, 1000);
         }
         this.checkForWinner = function () {
             for (var i = 0; i < this.cols; i++) {
@@ -90,13 +96,12 @@ var TicTacToe = (function () {
         this.endGame = function () {
             this.declareWinner();
             this.reset();
-            //prompt(); //listener on play again to this.play() and pickside()
+            this.play();
         }
         this.reset = function () {
             this.resetBoard();
             winner = false;
-            isPlayerTurn = null;
-            isPlayerX = null;
+            isPlayerTurn = isPlayerX;
             numMoves = 0;
         }
         this.startGame = function () {
@@ -106,8 +111,14 @@ var TicTacToe = (function () {
                 this.play(); //DOESN'T UNWIND?! memory issue?
             }
         }
+        this.clearBoard = function () {
+            for (var i = 0; i < this.cols; i++) {
+                for (var j = 0; j < this.cols; j++) {
+                    $("#bCell-" + i + "-" + j).html("");
+                }
+            }
+        }
         this.updateBoard = function () {
-            //$("#banner").html(board);
             for (var i = 0; i < this.cols; i++) {
                 for (var j = 0; j < this.cols; j++) {
                     var mark = board[i][j]
@@ -155,7 +166,7 @@ function setDisplay() {
     for (var i = 0; i < game.cols; i++) {
         bHtml += "<div class='bRow' id='bRow-" + i + "'>"
         for (var j = 0; j < game.cols; j++) {
-            bHtml += "<div class='bCell' id='bCell-" + i + "-" + j + "'></div>"
+            bHtml += "<div class='bCell' id='bCell-" + i + "-" + j + "' onclick='game.playerTurn(" + i + ", " + j + ")'></div>"
         }
         bHtml += "</div>"
     }

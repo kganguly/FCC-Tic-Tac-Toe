@@ -1,0 +1,43 @@
+body {
+    background-color: #313131;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+}
+
+header {
+    font-family: 'Indie Flower', cursive;
+    font-size: 5em;
+    font-weight: normal;
+    text-align: center;
+    line-height: 1;
+    padding-top: 10px;
+}
+
+main {
+    text-align: center;
+}
+
+#board {
+    display: inline-block;
+}
+
+.bRow {
+    padding: 0;
+    line-height: 0.8;
+    margin: 0;
+}
+
+.bCell {
+    height: 100px;
+    width: 100px;
+    display: inline-block;
+    margin: 0;
+    background-color: white;
+    border: solid 2px black;
+    font-family: 'Indie Flower', cursive;
+    color: blue;
+    font-size: 110px;
+}
+
+div {}

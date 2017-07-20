@@ -1,10 +1,11 @@
 var debug = true;
+var play = true;
 
 var TicTacToe = (function () {
     function TicTacToe() {
 
         var board = null;
-        var cols = 3;
+        this.cols = 3;
         var isPlayerX = null;
         var isPlayerTurn = null;
         var winner = false;
@@ -12,7 +13,7 @@ var TicTacToe = (function () {
 
         this.resetBoard = function () {
             board = [];
-            for (var i = 0; i < cols; i++) {
+            for (var i = 0; i < this.cols; i++) {
                 board[i] = [];
             }
         }
@@ -22,11 +23,11 @@ var TicTacToe = (function () {
             isPlayerTurn = isPlayerX;
         }
         this.play = function () {
-            while (!winner && numMoves < cols * cols) {
+            while (!winner && numMoves < this.cols * this.cols) {
                 if (isPlayerTurn) this.playerTurn();
                 else this.computerTurn();
                 console.log(this.printBoard());
-                this.updateBoard(this.printBoard());
+                this.updateBoard();
                 winner = this.checkForWinner()
                 isPlayerTurn = isPlayerTurn ? false : true;
             }
@@ -35,7 +36,9 @@ var TicTacToe = (function () {
         this.playerTurn = function () {
             sleep(1000);
             var move = getRandomMove();
-            board[move[0]][move[1]] = isPlayerX ? "X" : "O";
+            var mark = isPlayerX ? "X" : "O";
+            board[move[0]][move[1]] = mark;
+            $("#bCell-" + move[0] + "-" + move[1]).html(mark);
             //board[x][y] = isPlayerX ? "X" : "O";
             numMoves++;
         }
@@ -60,14 +63,16 @@ var TicTacToe = (function () {
         this.computerTurn = function () {
             sleep(1000);
             var move = getRandomMove();
-            board[move[0]][move[1]] = isPlayerX ? "O" : "X";
+            var mark = isPlayerX ? "O" : "X";
+            board[move[0]][move[1]] = mark;
+            $("#bCell-" + move[0] + "-" + move[1]).html(mark);
             numMoves++;
         }
         this.checkForWinner = function () {
-            for (var i = 0; i < cols; i++) {
+            for (var i = 0; i < this.cols; i++) {
                 if (board[i][0] === board[i][1] && board[i][1] === board[i][2]) return board[i][0];
             }
-            for (var i = 0; i < cols; i++) {
+            for (var i = 0; i < this.cols; i++) {
                 if (board[0][i] === board[1][i] && board[1][i] === board[2][i]) return board[0][i];
             }
             if (board[0][0] === board[1][1] && board[1][1] === board[2][2]) return board[0][0];
@@ -96,16 +101,24 @@ var TicTacToe = (function () {
         }
         this.startGame = function () {
             this.resetBoard();
-            this.pickSide();
-            this.play(); //DOESN'T UNWIND?! memory issue?
+            if (play) {
+                this.pickSide();
+                this.play(); //DOESN'T UNWIND?! memory issue?
+            }
         }
-        this.updateBoard = function (board) {
-            $("#banner").html(board);
+        this.updateBoard = function () {
+            //$("#banner").html(board);
+            for (var i = 0; i < this.cols; i++) {
+                for (var j = 0; j < this.cols; j++) {
+                    var mark = board[i][j]
+                    if (mark) $("bCell-" + i + "-" + j).html(mark);
+                }
+            }
         }
         this.printBoard = function () {
             var output = "";
-            for (var i = 0; i < cols; i++) {
-                for (var j = 0; j < cols; j++) {
+            for (var i = 0; i < this.cols; i++) {
+                for (var j = 0; j < this.cols; j++) {
                     output += board[i][j] + " "
                 }
                 output += "<br>\n";
@@ -131,13 +144,22 @@ var TicTacToe = (function () {
 var game = TicTacToe.getInstance();
 
 $(document).ready(function () {
-    //setDisplay()
+    setDisplay()
     //setListeners();
     game.startGame();
 });
 
 function setDisplay() {
+    var bHtml = "";
 
+    for (var i = 0; i < game.cols; i++) {
+        bHtml += "<div class='bRow' id='bRow-" + i + "'>"
+        for (var j = 0; j < game.cols; j++) {
+            bHtml += "<div class='bCell' id='bCell-" + i + "-" + j + "'></div>"
+        }
+        bHtml += "</div>"
+    }
+    $("#board").html(bHtml);
 }
 
 function setListeners() {

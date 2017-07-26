@@ -19,8 +19,17 @@ var TicTacToe = (function () {
             this.clearBoard();
         }
         this.pickSide = function () {
-            var playerChoice = prompt('Would you like to play as "X"s or "O"s', "X");
-            isPlayerX = playerChoice === null || playerChoice.trim().toUpperCase() === "X"; //handle cancel
+            this.displayChoicePrompt();
+        }
+        this.displayChoicePrompt = function () {
+            $("#choicePrompt").css("display", "block");
+            $("#choicePrompt").animate({
+                opacity: 1
+            }, 500);
+        }
+        this.playerChoice = function (choice) {
+            console.log("Player chooses: ", choice);
+            isPlayerX = choice == null || choice.trim().toUpperCase() === "X"; //handle cancel
             isPlayerTurn = isPlayerX;
         }
         this.play = function () {
@@ -34,14 +43,20 @@ var TicTacToe = (function () {
             }
         }
         this.givePlayerTurn = function () {
-            alert("Your turn!");
+            this.displayPrompt("Your turn!", function () {
+                locked = false;
+            });
         }
         this.playerTurn = function (x, y) {
+            if (!isPlayerTurn || locked) return;
             var mark = isPlayerX ? "X" : "O";
             board[x][y] = mark;
-            $("#bCell-" + x + "-" + y).html(mark);
+            var bCellId = "#bCell-" + x + "-" + y;
+            $(bCellId).html(mark);
+            $(bCellId).addClass(isPlayerX ? "blue" : "red");
             numMoves++;
             isPlayerTurn = false;
+            locked = true;
             this.play();
         }
 
@@ -53,25 +68,19 @@ var TicTacToe = (function () {
             }
             return trial;
         }
-
-        function sleep(ms) {
-            var start = new Date().getTime();
-            for (var i = 0; i < 1e7; i++) {
-                if ((new Date().getTime() - start) > ms) {
-                    break;
-                }
-            }
-        }
         this.computerTurn = function () {
             function makeMove() {
                 var move = getRandomMove();
                 var mark = isPlayerX ? "O" : "X";
                 board[move[0]][move[1]] = mark;
-                $("#bCell-" + move[0] + "-" + move[1]).html(mark);
+                var bCellId = "#bCell-" + move[0] + "-" + move[1];
+                $(bCellId).html(mark);
+                $(bCellId).addClass(isPlayerX ? "red" : "blue");
                 numMoves++;
                 isPlayerTurn = true;
                 game.play();
             }
+            isPlayerTurn = false;
             setTimeout(makeMove, 1000);
         }
         this.checkForWinner = function () {
@@ -86,17 +95,18 @@ var TicTacToe = (function () {
             return false;
         }
         this.declareWinner = function () {
+            console.log("WINNER IS: ", winner);
             if (winner) {
-                alert("The winner is " + winner + "!");
+                this.displayPrompt("The winner is " + winner + "!", this.play);
             } else {
-                alert("The game ended in a draw.");
+                this.displayPrompt("The game ended in a draw.", this.play);
             }
 
         }
         this.endGame = function () {
             this.declareWinner();
             this.reset();
-            this.play();
+            // this.play();
         }
         this.reset = function () {
             this.resetBoard();
@@ -108,7 +118,6 @@ var TicTacToe = (function () {
             this.resetBoard();
             if (play) {
                 this.pickSide();
-                this.play(); //DOESN'T UNWIND?! memory issue?
             }
         }
         this.clearBoard = function () {
@@ -136,6 +145,22 @@ var TicTacToe = (function () {
             }
             return output;
         }
+        this.displayPrompt = function (prompt, nextGameAction) {
+            $("#userPrompt>button").off("click");
+            $("#userPrompt>button").on("click", function () {
+                $("#userPrompt").animate({
+                    opacity: 0
+                }, 300, function () {
+                    $("#userPrompt").css("display", "none");
+                    if (nextGameAction) nextGameAction.apply(game);
+                });
+            });
+            $("#userPrompt>.modalInfo").html(prompt);
+            $("#userPrompt").css("display", "block");
+            $("#userPrompt").animate({
+                opacity: 1
+            }, 500);
+        }
     }
 
     var instance;
@@ -156,7 +181,7 @@ var game = TicTacToe.getInstance();
 
 $(document).ready(function () {
     setDisplay()
-    //setListeners();
+    setListeners();
     game.startGame();
 });
 
@@ -174,28 +199,22 @@ function setDisplay() {
 }
 
 function setListeners() {
-    $("#break .minus").click(function () {
-        if (!timer.isRunning()) {
-            timer.decrementBreak();
-            if (!timer.sessionTimer) timer.setTime(timer.getBreak());
-        }
+    $("#xButton").on("click", function () {
+        $("#choicePrompt").animate({
+            opacity: 0
+        }, 300, function () {
+            $("#choicePrompt").css("display", "none");
+            game.playerChoice("X");
+            game.play();
+        });
     });
-    $("#timer").click(function () {
-        var alarm = timer.getAlarm();
-        if (!alarm.sound.src) {
-            try {
-                alarm.play();
-                alarm.stop();
-                alarm.sound.src = alarm.src;
-            } catch (err) {
-                console.log(err);
-            }
-        }
-
-        if (timer.isRunning()) {
-            timer.stopTimer();
-        } else {
-            timer.startTimer();
-        }
+    $("#oButton").on("click", function () {
+        $("#choicePrompt").animate({
+            opacity: 0
+        }, 300, function () {
+            $("#choicePrompt").css("display", "none");
+            game.playerChoice("O");
+            game.play();
+        });
     });
 }

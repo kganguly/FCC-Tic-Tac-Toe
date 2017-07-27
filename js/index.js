@@ -8,6 +8,7 @@ var TicTacToe = (function () {
         this.cols = 3;
         var isPlayerX = null;
         var isPlayerTurn = null;
+        var locked = true;
         var winner = false;
         var numMoves = 0;
 
@@ -49,11 +50,13 @@ var TicTacToe = (function () {
         }
         this.playerTurn = function (x, y) {
             if (!isPlayerTurn || locked) return;
+            if (board[x][y] != null) return;
             var mark = isPlayerX ? "X" : "O";
             board[x][y] = mark;
             var bCellId = "#bCell-" + x + "-" + y;
+            console.log("PLAYER: " + mark + " isPlayerX: " + isPlayerX + " Color: " + (isPlayerX ? "blue" : "red"));
             $(bCellId).html(mark);
-            $(bCellId).addClass(isPlayerX ? "blue" : "red");
+            $(bCellId).addClass("blue");
             numMoves++;
             isPlayerTurn = false;
             locked = true;
@@ -73,9 +76,10 @@ var TicTacToe = (function () {
                 var move = getRandomMove();
                 var mark = isPlayerX ? "O" : "X";
                 board[move[0]][move[1]] = mark;
-                var bCellId = "#bCell-" + move[0] + "-" + move[1];
-                $(bCellId).html(mark);
-                $(bCellId).addClass(isPlayerX ? "red" : "blue");
+                var cellId = "#bCell-" + move[0] + "-" + move[1];
+                console.log("COMPUTER: " + mark + " isPlayerX: " + isPlayerX + " Color: " + (isPlayerX ? "red" : "blue"));
+                $(cellId).html(mark);
+                $(cellId).addClass("red");
                 numMoves++;
                 isPlayerTurn = true;
                 game.play();
@@ -97,16 +101,18 @@ var TicTacToe = (function () {
         this.declareWinner = function () {
             console.log("WINNER IS: ", winner);
             if (winner) {
-                this.displayPrompt("The winner is " + winner + "!", this.play);
+                this.displayPrompt("The winner is " + winner + "!", this.playAgain);
             } else {
-                this.displayPrompt("The game ended in a draw.", this.play);
+                this.displayPrompt("The game ended in a draw.", this.playAgain);
             }
 
         }
+        this.playAgain = function () {
+            this.reset();
+            this.play();
+        }
         this.endGame = function () {
             this.declareWinner();
-            this.reset();
-            // this.play();
         }
         this.reset = function () {
             this.resetBoard();
@@ -124,6 +130,8 @@ var TicTacToe = (function () {
             for (var i = 0; i < this.cols; i++) {
                 for (var j = 0; j < this.cols; j++) {
                     $("#bCell-" + i + "-" + j).html("");
+                    $("#bCell-" + i + "-" + j).removeClass("red");
+                    $("#bCell-" + i + "-" + j).removeClass("blue");
                 }
             }
         }

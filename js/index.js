@@ -8,6 +8,7 @@ var TicTacToe = (function () {
         this.cols = 3;
         var isPlayerX = null;
         var isPlayerTurn = null;
+        var isFirstRound = true;
         var locked = true;
         var winner = false;
         var numMoves = 0;
@@ -44,9 +45,14 @@ var TicTacToe = (function () {
             }
         }
         this.givePlayerTurn = function () {
-            this.displayPrompt("Your turn!", false, function () {
+            if (isFirstRound) {
+                isFirstRound = false;
+                this.displayPrompt("Your turn!", false, function () {
+                    locked = false;
+                });
+            } else {
                 locked = false;
-            });
+            }
         }
         this.playerTurn = function (x, y) {
             if (!isPlayerTurn || locked) return;
@@ -64,6 +70,7 @@ var TicTacToe = (function () {
         }
 
         function getRandomMove() {
+            console.log("RANDOM!");
             var isValid = false;
             while (!isValid) {
                 var trial = [Math.floor(Math.random() * 3), Math.floor(Math.random() * 3)];
@@ -71,13 +78,34 @@ var TicTacToe = (function () {
             }
             return trial;
         }
+
+        function getMove() {
+            for (var i = 0; i < game.cols; i++) {
+                if (board[i][0] && board[i][0] === board[i][1] && !board[i][2]) return [i, 2];
+                if (board[i][0] && board[i][0] === board[i][2] && !board[i][1]) return [i, 1];
+                if (board[i][1] && board[i][1] === board[i][2] && !board[i][0]) return [i, 0];
+            }
+            for (var i = 0; i < game.cols; i++) {
+                if (board[0][i] && board[0][i] === board[1][i] && !board[2][i]) return [2, i];
+                if (board[0][i] && board[0][i] === board[2][i] && !board[1][i]) return [1, i];
+                if (board[1][i] && board[1][i] === board[2][i] && !board[0][i]) return [0, i];
+            }
+            if (board[0][0] && board[0][0] === board[1][1] && !board[2][2]) return [2, 2];
+            if (board[0][0] && board[0][0] === board[2][2] && !board[1][1]) return [1, 1];
+            if (board[1][1] && board[1][1] === board[2][2] && !board[0][0]) return [0, 0];
+            if (board[2][0] && board[2][0] === board[1][1] && !board[0][2]) return [0, 2];
+            if (board[2][0] && board[2][0] === board[0][2] && !board[1][1]) return [1, 1];
+            if (board[1][1] && board[1][1] === board[0][2] && !board[2][0]) return [2, 0];
+            return getRandomMove();
+        }
+
         this.computerTurn = function () {
             function makeMove() {
-                var move = getRandomMove();
+                var move = getMove();
                 var mark = isPlayerX ? "O" : "X";
                 board[move[0]][move[1]] = mark;
                 var cellId = "#bCell-" + move[0] + "-" + move[1];
-                console.log("COMPUTER: " + mark + " isPlayerX: " + isPlayerX + " Color: " + (isPlayerX ? "red" : "blue"));
+                console.log("COMPUTER: " + mark + " isPlayerX: " + isPlayerX + " Move: " + move);
                 $(cellId).html(mark);
                 $(cellId).addClass("red");
                 numMoves++;
@@ -118,6 +146,7 @@ var TicTacToe = (function () {
             this.resetBoard();
             winner = false;
             isPlayerTurn = isPlayerX;
+            isFirstRound = true;
             numMoves = 0;
         }
         this.startGame = function () {

@@ -44,7 +44,7 @@ var TicTacToe = (function () {
             }
         }
         this.givePlayerTurn = function () {
-            this.displayPrompt("Your turn!", function () {
+            this.displayPrompt("Your turn!", false, function () {
                 locked = false;
             });
         }
@@ -101,9 +101,9 @@ var TicTacToe = (function () {
         this.declareWinner = function () {
             console.log("WINNER IS: ", winner);
             if (winner) {
-                this.displayPrompt("The winner is " + winner + "!", this.playAgain);
+                this.displayPrompt("The winner is " + winner + "!", true, this.playAgain);
             } else {
-                this.displayPrompt("The game ended in a draw.", this.playAgain);
+                this.displayPrompt("The game ended in a draw.", true, this.playAgain);
             }
 
         }
@@ -153,21 +153,44 @@ var TicTacToe = (function () {
             }
             return output;
         }
-        this.displayPrompt = function (prompt, nextGameAction) {
+        this.displayPrompt = function (message, confirm, nextGameAction) {
+            $("#userPrompt>.modalInfo").html(message);
+            $("#userPrompt").css("display", "block");
             $("#userPrompt>button").off("click");
-            $("#userPrompt>button").on("click", function () {
+            if (confirm) {
+                $("#userPrompt>button").css("display", "block");
+                $("#userPrompt>button").on("click", function () {
+                    $("#userPrompt").animate({
+                        opacity: 0
+                    }, 300, function () {
+                        $("#userPrompt").css("display", "none");
+                        if (nextGameAction) nextGameAction.apply(game);
+                    });
+                });
                 $("#userPrompt").animate({
                     opacity: 0
-                }, 300, function () {
+                }, 300);
+                $("#userPrompt").animate({
+                    opacity: 1
+                }, 500);
+            } else {
+                $("#userPrompt>button").css("display", "none");
+                $("#userPrompt").animate({
+                    opacity: 0
+                }, 300);
+                $("#userPrompt").animate({
+                    opacity: 1
+                }, 500);
+                $("#userPrompt").animate({
+                    opacity: 1
+                }, 300);
+                $("#userPrompt").animate({
+                    opacity: 0
+                }, 500, function () {
                     $("#userPrompt").css("display", "none");
                     if (nextGameAction) nextGameAction.apply(game);
                 });
-            });
-            $("#userPrompt>.modalInfo").html(prompt);
-            $("#userPrompt").css("display", "block");
-            $("#userPrompt").animate({
-                opacity: 1
-            }, 500);
+            }
         }
     }
 
@@ -210,19 +233,17 @@ function setListeners() {
     $("#xButton").on("click", function () {
         $("#choicePrompt").animate({
             opacity: 0
-        }, 300, function () {
-            $("#choicePrompt").css("display", "none");
-            game.playerChoice("X");
-            game.play();
-        });
+        }, 300);
+        $("#choicePrompt").css("display", "none");
+        game.playerChoice("X");
+        game.play();
     });
     $("#oButton").on("click", function () {
         $("#choicePrompt").animate({
             opacity: 0
-        }, 300, function () {
-            $("#choicePrompt").css("display", "none");
-            game.playerChoice("O");
-            game.play();
-        });
+        }, 300);
+        $("#choicePrompt").css("display", "none");
+        game.playerChoice("O");
+        game.play();
     });
 }
